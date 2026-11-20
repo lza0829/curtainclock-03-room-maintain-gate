@@ -55,6 +55,14 @@ export default function Leases() {
               <td>{r.session_code}</td>
               <td>
                 {r.room_code} / {r.teacher_code}
+                {r.room_maintenance ? (
+                  <>
+                    <br />
+                    <span className="tag maint">
+                      槽位维护中：{r.room_maintenance_reason}
+                    </span>
+                  </>
+                ) : null}
               </td>
               <td>
                 {r.day} {fmtMin(r.start_min)}–{fmtMin(r.end_min)}

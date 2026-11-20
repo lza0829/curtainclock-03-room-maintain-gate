@@ -10,6 +10,18 @@ def room_active(conn: sqlite3.Connection, room_code: str) -> bool:
     return bool(row and row["active"] == 1)
 
 
+def room_maintenance(conn: sqlite3.Connection, room_code: str) -> sqlite3.Row | None:
+    """算力槽维护态的唯一判源：rooms 行。在维护中返回该行，否则 None。"""
+    row = conn.execute(
+        "SELECT maintenance, maintenance_reason, maintenance_since "
+        "FROM rooms WHERE code=?",
+        (room_code,),
+    ).fetchone()
+    if row and row["maintenance"] == 1:
+        return row
+    return None
+
+
 def teacher_active(conn: sqlite3.Connection, teacher_code: str) -> bool:
     row = conn.execute(
         "SELECT active FROM teachers WHERE code=?", (teacher_code,)
@@ -50,6 +62,10 @@ def readiness(conn: sqlite3.Connection, session: sqlite3.Row) -> dict:
     reasons: list[str] = []
     if not room_active(conn, session["room_code"]):
         reasons.append("算力槽未启用")
+    maint = room_maintenance(conn, session["room_code"])
+    if maint is not None:
+        # 贯彻「维护挡新开」：维护中一律不就绪，原因随 rooms 行同源下发
+        reasons.append(f"算力槽维护中：{maint['maintenance_reason'] or '例行维护'}")
     if not teacher_active(conn, session["teacher_code"]):
         reasons.append("执行器未启用")
     busy_room = resource_busy(

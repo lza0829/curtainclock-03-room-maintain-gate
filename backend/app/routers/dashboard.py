@@ -27,12 +27,16 @@ def dashboard():
         draft_n = conn.execute(
             "SELECT COUNT(*) c FROM sessions WHERE status='draft'"
         ).fetchone()["c"]
+        maint_n = conn.execute(
+            "SELECT COUNT(*) c FROM rooms WHERE maintenance=1"
+        ).fetchone()["c"]
         return {
             "fixture_day": day,
             "open_leases": int(open_leases["value"]) if open_leases else 0,
             "conflict_count": int(conflicts["value"]) if conflicts else 0,
             "live_sessions": live_n,
             "draft_sessions": draft_n,
+            "maintenance_rooms": maint_n,
         }
     finally:
         conn.close()

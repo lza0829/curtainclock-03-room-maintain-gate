@@ -28,4 +28,11 @@ export const api = {
     req("/leases/open", { method: "POST", body: JSON.stringify({ session_code }) }),
   closeLease: (lease_no) =>
     req("/leases/close", { method: "POST", body: JSON.stringify({ lease_no }) }),
+  setRoomMaintenance: (code, reason) =>
+    req(`/rooms/${code}/maintenance`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  clearRoomMaintenance: (code) =>
+    req(`/rooms/${code}/maintenance/clear`, { method: "POST", body: JSON.stringify({}) }),
 };

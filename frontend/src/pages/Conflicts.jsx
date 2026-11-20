@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 
+const kindLabel = {
+  room: "算力槽",
+  teacher: "执行器",
+  ready: "就绪",
+  maintenance: "维护",
+};
+
 export default function Conflicts() {
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState("");
@@ -35,7 +42,7 @@ export default function Conflicts() {
           )}
           {rows.map((r) => (
             <tr key={r.id}>
-              <td>{r.kind}</td>
+              <td>{kindLabel[r.kind] || r.kind}</td>
               <td>{r.session_code}</td>
               <td>{r.resource_code}</td>
               <td>{r.reason}</td>

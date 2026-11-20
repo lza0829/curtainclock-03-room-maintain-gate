@@ -44,10 +44,17 @@ def open_lease(conn: sqlite3.Connection, session_code: str) -> dict:
     if not ready["ready"]:
         mode = _conflict_mode(conn)
         for reason in ready["reasons"]:
-            kind = "room" if "算力槽" in reason else ("teacher" if "执行器" in reason else "ready")
+            if "维护" in reason:
+                kind = "maintenance"
+            elif "算力槽" in reason:
+                kind = "room"
+            elif "执行器" in reason:
+                kind = "teacher"
+            else:
+                kind = "ready"
             resource = (
                 session["room_code"]
-                if kind == "room"
+                if kind in ("room", "maintenance")
                 else (session["teacher_code"] if kind == "teacher" else session_code)
             )
             conn.execute(

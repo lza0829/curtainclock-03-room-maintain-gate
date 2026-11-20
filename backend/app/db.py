@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS rooms (
   code TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   capacity INTEGER NOT NULL,
-  active INTEGER NOT NULL DEFAULT 1
+  active INTEGER NOT NULL DEFAULT 1,
+  maintenance INTEGER NOT NULL DEFAULT 0,
+  maintenance_reason TEXT,
+  maintenance_since TEXT
 );
 CREATE TABLE IF NOT EXISTS teachers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,10 +94,27 @@ def transaction():
         conn.close()
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """老库补列：维护旗标/原因/起始时刻。幂等，供 init_db 调用。"""
+    cols = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(rooms)").fetchall()
+    }
+    additions = {
+        "maintenance": "ALTER TABLE rooms ADD COLUMN maintenance INTEGER NOT NULL DEFAULT 0",
+        "maintenance_reason": "ALTER TABLE rooms ADD COLUMN maintenance_reason TEXT",
+        "maintenance_since": "ALTER TABLE rooms ADD COLUMN maintenance_since TEXT",
+    }
+    for col, stmt in additions.items():
+        if col not in cols:
+            conn.execute(stmt)
+
+
 def init_db() -> None:
     conn = connect()
     try:
         conn.executescript(SCHEMA)
+        _migrate(conn)
         conn.commit()
     finally:
         conn.close()

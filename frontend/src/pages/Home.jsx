@@ -35,6 +35,10 @@ export default function Home() {
           待开窗
           <b>{d.draft_sessions}</b>
         </div>
+        <div className="stat">
+          维护中槽位
+          <b>{d.maintenance_rooms}</b>
+        </div>
       </div>
     </section>
   );

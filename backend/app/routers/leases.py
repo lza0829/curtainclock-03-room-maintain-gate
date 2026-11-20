@@ -21,8 +21,12 @@ class CloseBody(BaseModel):
 def list_leases():
     conn = connect()
     try:
+        # 在途租约与槽位维护态同源：联 rooms 行下挂维护旗标，不回写租约本身
         rows = conn.execute(
-            "SELECT * FROM leases ORDER BY id DESC"
+            "SELECT l.*, r.maintenance AS room_maintenance, "
+            "r.maintenance_reason AS room_maintenance_reason "
+            "FROM leases l LEFT JOIN rooms r ON r.code = l.room_code "
+            "ORDER BY l.id DESC"
         ).fetchall()
         return [dict(r) for r in rows]
     finally:
